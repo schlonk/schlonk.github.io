@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            canvas{
+                border: 1px solid black;
+                background: #d3d3d3;
+            }
+            body{
+				text-align:center;
+			}
+        </style>
+    </head>
+    <body>
+        <canvas id="canv" width="400" height="400"></canvas> 
+    <script>
+    //A1
+    var canvas = document.getElementById("canv");
+    var ctx = canvas.getContext("2d"); 
+    // Koordinaten der Schlange, der erste Eintrag ist der Kopf der Schlange
+    var snake = [{x: 3, y: 2}, {x: 4, y: 2}, {x: 5, y: 2}];
+    // Koordinaten der Frucht
+    var fruit = {x: 5, y: 5};//y was 5
+    // Richtung, in die sich die Schlange momentan bewegt
+    var currentDirection = {x: -1, y: 0};
+    var cell = 20;
+    var cellRows = 20;
+
+    function clearCanvas(){
+	    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    //A2
+    function drawFruit(fruit){
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#d3d3d3";
+        ctx.fillStyle = "#538700";
+        ctx.fillRect(fruit.x * cell, fruit.y * cell, cell, cell);
+        ctx.strokeRect(fruit.x * cell, fruit.y * cell, cell, cell);			
+    }
+
+    function drawSnake(snake){
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#D3D3D3";
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(snake[0].x * cell, snake[0].y * cell, cell, cell);
+        ctx.strokeRect(snake[0].x * cell, snake[0].y * cell, cell, cell);
+        ctx.fillStyle = "#00538E";
+        for(var i=1;i<snake.length;i++){
+            ctx.fillRect(snake[i].x * cell, snake[i].y * cell, cell, cell);
+            ctx.strokeRect(snake[i].x * cell, snake[i].y * cell, cell, cell);
+        }
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(snake[0].x * cell, snake[0].y * cell, cell, cell);
+        ctx.strokeRect(snake[0].x * cell, snake[0].y * cell, cell, cell);		
+    }
+
+    function drawGameOver(points){
+	    ctx.font = "50px arial";
+	    ctx.textAlign = "center";
+	    ctx.fillStyle = "white";
+	    ctx.fillText("Game over!", canvas.width/2, canvas.height/2);
+        ctx.font = "25px arial";
+	    ctx.fillStyle = "white";
+	    ctx.fillText(points + " Punkte", canvas.width/2, canvas.height/2 + 50);
+    }
+
+    //A3
+    function fruitCollidesWithSnake(snake, fruit){
+        var bool=false;
+        for(var i=0;i<snake.length;i++){
+            if(snake[i].x==fruit.x&&snake[i].y==fruit.y){
+                bool=true;
+            }
+        }
+        return bool;
+    }
+
+    function randomCoordinatesOutsideSnake(snake){
+        var coord_x=Math.floor(Math.random() * 20);
+        var coord_y=Math.floor(Math.random() * 20);
+        var pos={x: coord_x,y: coord_y};
+        if(fruitCollidesWithSnake(snake,pos)){
+            randomCoordinatesOutsideSnake(snake);
+        }else{
+            return pos;
+        }
+    }
+
+    function snakeHeadCollidesWithSnake(snake){
+        var bool=false;
+        var head=snake[0];
+        for(var i=1;i<snake.length;i++){
+            if(snake[i].x==head.x&&snake[i].y==head.y){
+                bool=true;
+            }
+        }
+        return bool;
+    }
+
+    // Berechnet n modulo m
+    function mod(n, m) {
+        return ((n % m) + m) % m;
+    }
+
+    function moveSnake(snake, directionVector){
+        var coord_x=mod(snake[0].x+directionVector.x,cell);
+        var coord_y=mod(snake[0].y+directionVector.y,cell);
+        var newHead={x:coord_x,y:coord_y};
+        snake.pop();
+        snake.unshift(newHead);
+    }
+
+    //A4
+    var left={x: -1, y: 0};
+    var right={x: 1, y: 0};
+    var up={x: 0, y: -1};
+    var down={x: 0, y: 1};
+
+    function moveSnakeLeft(snake) {
+        if(currentDirection!=right){
+            currentDirection=left;
+        }
+    }
+
+    function moveSnakeRight(snake) {
+        if(currentDirection!=left){
+           currentDirection=right;
+        }
+    }
+
+    function moveSnakeUp(snake) {
+        if(currentDirection!=down){
+           currentDirection=up;
+        }
+    }
+
+    function moveSnakeDown(snake) {
+        if(currentDirection!=up){
+           currentDirection=down;
+        }
+    }
+
+
+    var intervalID = setInterval(function () {
+        // ... Bewegen und Zeichnen der Schlange ...
+        clearCanvas();
+        var tail=moveSnake(snake,currentDirection);
+        drawSnake(snake);
+        drawFruit(fruit);
+        if(fruitCollidesWithSnake(snake,fruit)){
+            clearCanvas();
+            fruit=randomCoordinatesOutsideSnake(snake);
+            snake.push(tail);
+            drawSnake(snake);
+            drawFruit(fruit);
+        }
+
+        // Wenn das Spiel beendet ist, muss setInterval gestoppt werden:
+        if(snakeHeadCollidesWithSnake(snake)) {
+            drawGameOver(snake.length-3);
+            clearInterval(intervalID);
+        }
+    }, 150);
+
+    document.body.addEventListener("keydown", function (event) {
+        // ... verändern der currentDirection ...
+        if (event.key == "ArrowLeft"){
+		    moveSnakeLeft(snake);
+        }	
+        if (event.key == "ArrowRight"){
+            moveSnakeRight(snake);
+        }
+        if (event.key == "ArrowUp"){
+		    moveSnakeUp(snake);
+        }	
+        if (event.key == "ArrowDown"){
+            moveSnakeDown(snake);
+        }
+    });
+
+
+
+    </script>	
+    </body>   
+    <!--:)-->
+</html>
